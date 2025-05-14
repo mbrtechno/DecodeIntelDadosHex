@@ -11,8 +11,9 @@
 int main(int argc, char *argv[]){
 	FILE *entrada, *saida;
 	char linha[255]; 		//Buffer para armazenar dado de cada linha
-	char aux;
 	int i;
+
+	printf("Processando...\n");
 
 	//Abrir o arquivo a ser analisado e o arquivo que receberá os dados tratados
 	entrada = fopen("production.hex", "r");
@@ -21,7 +22,7 @@ int main(int argc, char *argv[]){
 		return EXIT_FAILURE;
 	}
 
-	saida = fopen("analisado.txt", "a");
+	saida = fopen("analisado.txt", "w");
 	if(saida == NULL){
 		perror("Erro ao abrir arquivo de saida");
 		return EXIT_FAILURE;
@@ -29,19 +30,25 @@ int main(int argc, char *argv[]){
 
 	//Leitura de cada linha
 	while(fgets(linha, sizeof(linha), entrada)){
-		//unir bytes antes da analise
-		for(i = 0; i < sizeof(linha); i++){
-			aux = (linha[i+1] << 4) | linha[i+2];
-			linha[i] = aux;
-			aux = sizeof(linha);
+		//Testar se linha contém dados ou endereços
+		if((linha[8] == 0x30)){
+			//salvar a partir do inicio de dados até o checksum
+			i = 9;
+			while(linha[i] != 0x0A){
+				fputc(linha[i], saida);	// somente dados - sem checksum
+				i++;
+			}
+			fputc(linha[i], saida);	//arquivo possue quebra de linha
+		}else{
+			//Não adiciona linha que possuem somente informações de endereços
 		}
-
-		//tratar cada linha seguindo o padrão INTELHEX
 	}
 
 	//fechamento dos arquivos aberto
 	fclose(entrada);
 	fclose(saida);
+
+	printf("Finalizado.\n");
 	return EXIT_SUCCESS;
 }
 
