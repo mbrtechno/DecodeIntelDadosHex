@@ -12,6 +12,7 @@ int main(int argc, char *argv[]){
 	FILE *entrada, *saida;
 	char linha[255]; 		//Buffer para armazenar dado de cada linha
 	int i;
+	int ndados;
 
 	printf("Processando...\n");
 
@@ -30,15 +31,17 @@ int main(int argc, char *argv[]){
 
 	//Leitura de cada linha
 	while(fgets(linha, sizeof(linha), entrada)){
+
+		//informa quantos bytes foram adicionados
+		ndados = (strlen(linha)-3);
+
 		//Testar se linha contém dados ou endereços
-		if((linha[8] == 0x30)){
+		if((linha[8] == '0')){
 			//salvar a partir do inicio de dados até o checksum
-			i = 9;
-			while(linha[i] != 0x0A){
+			for(i = 9; i < ndados; i++){
 				fputc(linha[i], saida);	// somente dados - sem checksum
-				i++;
 			}
-			fputc(linha[i], saida);	//arquivo possue quebra de linha
+			fputc('\n', saida);	//arquivo possue quebra de linha
 		}else{
 			//Não adiciona linha que possuem somente informações de endereços
 		}
